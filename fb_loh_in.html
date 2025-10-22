@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Facebook - Log In or Sign Up (Demo)</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Helvetica, Arial, sans-serif;
+      background-color: #f0f2f5;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      gap: 100px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .left-section {
+      max-width: 400px;
+    }
+
+    .left-section h1 {
+      color: #1877f2; /* consistent FB-blue */
+      font-size: 60px;
+      margin: 0;
+      line-height: 1;
+    }
+
+    .left-section p {
+      font-size: 24px;
+      color: #1c1e21;
+      margin-top: 12px;
+    }
+
+    .login-box {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+      width: 350px;
+      text-align: center;
+    }
+
+    .login-box input {
+      width: 90%;
+      padding: 12px;
+      margin: 8px 8px 16px 8px;
+      border: 1px solid #dddfe2;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      background-color: #1877f2; /* fixed to match heading */
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .login-box button[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .login-box button:hover:not([disabled]) {
+      background-color: #166fe0;
+    }
+
+    .login-box a {
+      display: block;
+      color: #1877f2;
+      font-size: 14px;
+      text-decoration: none;
+      margin: 10px 0;
+    }
+
+    .divider {
+      border-bottom: 1px solid #dadde1;
+      margin: 20px 0;
+    }
+
+    .create-btn {
+      background-color: #42b72a;
+      font-size: 17px;
+      border: none;
+      border-radius: 6px;
+      color: #ffffff;
+      padding: 12px 0;
+      width: 60%;
+      cursor: pointer;
+      margin: 0 auto;
+      display: block;
+    }
+
+    .create-btn:hover {
+      background-color: #36a420;
+    }
+
+    .msg {
+      margin-top: 8px;
+      min-height: 20px;
+      font-size: 14px;
+    }
+
+    .msg.error { color: #b91c1c; }
+    .msg.success { color: #15803d; }
+
+    .warning {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 10px;
+      background: #fff8e1;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #fde68a;
+      text-align: left;
+    }
+
+    .small { font-size: 12px; color: #6b7280; margin-top: 8px; text-align: center; }
+
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+        gap: 40px;
+        text-align: center;
+        align-items: stretch;
+      }
+      .left-section { order: 2; }
+      .login-box { order: 1; margin: 0 auto; }
+      .left-section h1 { font-size: 48px; }
+      .left-section p { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left-section" aria-hidden="false">
+      <h1>facebook</h1>
+      <p>Connect with friends and the world around you on Facebook.</p>
+    </div>
+
+    <div class="login-box" role="region" aria-label="Login Box">
+      <form id="loginForm" autocomplete="off" novalidate>
+        <input type="text" id="email" placeholder="Email or phone number" required aria-label="Email or phone">
+        <input type="password" id="password" placeholder="Password" required aria-label="Password">
+        <button type="submit" id="submitBtn">Log In</button>
+      </form>
+
+      <!-- ===== Add message box (was missing) ===== -->
+      <div id="message" class="msg" aria-live="polite"></div>
+
+      <a href="#">Forgotten password?</a>
+      <div class="divider" role="separator"></div>
+      <button class="create-btn">Create new account</button>
+
+      <div class="warning" role="note">
+        <strong>Demo only:</strong> Do not enter real credentials. This page runs locally and is for presentation purposes.
+      </div>
+
+      <div class="small">Demo credential: <code>demo@fb.com</code> / <code>demopass</code></div>
+    </div>
+  </div>
+
+  <script>
+  // ===== Demo submit-capture script (paste this into your file) =====
+  // Elements (IDs must match your HTML)
+  const form = document.getElementById('loginForm');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const messageBox = document.getElementById('message');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // 🔸 Demo account (optional) — change for presentation
+  const DEMO_ACCOUNT = {
+    email: "demo@fb.com",
+    password: "demopass"
+  };
+
+  // Show messages in the page
+  function showMessage(text, type = 'error') {
+    if (!messageBox) return;
+    messageBox.textContent = text;
+    messageBox.className = 'msg ' + (type === 'success' ? 'success' : 'error');
+  }
+
+  // Basic validation
+  function validateInputs(email, password) {
+    if (!email || !password) {
+      showMessage('Please enter both email and password.');
+      return false;
+    }
+    if (password.length < 6) {
+      showMessage('Password must be at least 6 characters.');
+      return false;
+    }
+    return true;
+  }
+
+  // Submit handler: capture values only when user clicks Log In
+  form.addEventListener('submit', function (e) {
+    e.preventDefault(); // prevent real submit in demo
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    // client-side validation
+    if (!validateInputs(email, password)) return;
+
+    // ======= CAPTURE HERE (for demo purposes) =======
+    // show them in an alert (so the class sees the captured values)
+    alert("⚠️ [Captured Input]\nEmail: " + email + "\nPassword: " + password);
+
+    // also log to developer console for your presentation (open DevTools -> Console)
+    console.log("Captured Email:", email);
+    console.log("Captured Password:", password);
+    // ================================================
+
+    // Simulate a login check (local only)
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Checking...';
+    showMessage('');
+
+    setTimeout(() => {
+      if (email.toLowerCase() === DEMO_ACCOUNT.email && password === DEMO_ACCOUNT.password) {
+        showMessage('Login successful! (demo only)', 'success');
+      } else {
+        showMessage('Invalid email or password. (Demo site)');
+      }
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Log In';
+    }, 700);
+  });
+
+  // Gentle paste warning
+  passwordInput.addEventListener('paste', function () {
+    showMessage('Tip: For this demo, avoid pasting real passwords. Use the demo credential shown below.');
+  });
+
+  // Clear messages on input so user sees fresh state
+  [emailInput, passwordInput].forEach((el) => {
+    el.addEventListener('input', () => {
+      if (messageBox && messageBox.textContent) messageBox.textContent = '';
+    });
+  });
+</script>
+</body>
+</html>
